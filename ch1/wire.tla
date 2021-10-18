@@ -8,7 +8,8 @@ variables
     acc = [p \in people |-> 5], \* function (dict/map in general programming), use like acc["alice"]
     sender = "alice",
     receiver = "bob",
-    amount = 3;
+    \* amount \in 1..6;
+    amount \in 1..acc[sender];
 
 define
     NoOverdrafts == \A p \in people: acc[p] >= 0    \* def of operator
@@ -22,7 +23,7 @@ Withdraw:
 
 end algorithm;*)
 
-\* BEGIN TRANSLATION (chksum(pcal) = "510b4818" /\ chksum(tla) = "4680c904")
+\* BEGIN TRANSLATION (chksum(pcal) = "c3cc796e" /\ chksum(tla) = "af35131d")
 VARIABLES people, acc, sender, receiver, amount, pc
 
 (* define statement *)
@@ -36,7 +37,7 @@ Init == (* Global variables *)
         /\ acc = [p \in people |-> 5]
         /\ sender = "alice"
         /\ receiver = "bob"
-        /\ amount = 3
+        /\ amount \in 1..acc[sender]
         /\ pc = "Withdraw"
 
 Withdraw == /\ pc = "Withdraw"
@@ -64,5 +65,5 @@ Termination == <>(pc = "Done")
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Oct 18 22:30:37 JST 2021 by ryo
+\* Last modified Mon Oct 18 22:41:29 JST 2021 by ryo
 \* Created Mon Oct 18 22:20:17 JST 2021 by ryo
