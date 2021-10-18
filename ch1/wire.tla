@@ -9,6 +9,7 @@ variables
 
 define
     NoOverdrafts == \A p \in people: acc[p] >= 0    \* def of operator
+    EventuallyConsistent == <>[](acc["alice"] + acc["bob"] = 10)
 end define;
 
 process Wire \in 1..2
@@ -27,11 +28,12 @@ end process;
 
 end algorithm;*)
 
-\* BEGIN TRANSLATION (chksum(pcal) = "fa314cbc" /\ chksum(tla) = "ea3b2288")
+\* BEGIN TRANSLATION (chksum(pcal) = "949c9ea7" /\ chksum(tla) = "9de4ee06")
 VARIABLES people, acc, pc
 
 (* define statement *)
 NoOverdrafts == \A p \in people: acc[p] >= 0
+EventuallyConsistent == <>[](acc["alice"] + acc["bob"] = 10)
 
 VARIABLES sender, receiver, amount
 
@@ -79,5 +81,5 @@ Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Oct 18 22:48:33 JST 2021 by ryo
+\* Last modified Mon Oct 18 22:52:13 JST 2021 by ryo
 \* Created Mon Oct 18 22:20:17 JST 2021 by ryo
