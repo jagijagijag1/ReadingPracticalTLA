@@ -5,65 +5,79 @@ EXTENDS Integers
 
 variables
     people = {"alice", "bob"},
-    acc = [p \in people |-> 5], \* function (dict/map in general programming), use like acc["alice"]
-    sender = "alice",
-    receiver = "bob",
-    \* amount \in 1..6;
-    amount \in 1..acc[sender];
+    acc = [p \in people |-> 5]; \* function (dict/map in general programming), use like acc["alice"]
 
 define
     NoOverdrafts == \A p \in people: acc[p] >= 0    \* def of operator
 end define;
 
+process Wire \in 1..2
+    variables
+        sender = "alice",
+        receiver = "bob",
+        amount \in 1..acc[sender];
 begin
-Withdraw:
-        acc[sender] := acc[sender] - amount;
-    Deposite:
-        acc[receiver] := acc[receiver] + amount;
+    CheckAndWithdraw:
+        if amount <= acc[sender] then
+                acc[sender] := acc[sender] - amount;
+            Deposite:
+                acc[receiver] := acc[receiver] + amount;
+        end if;
+end process;
 
 end algorithm;*)
 
-\* BEGIN TRANSLATION (chksum(pcal) = "c3cc796e" /\ chksum(tla) = "af35131d")
-VARIABLES people, acc, sender, receiver, amount, pc
+\* BEGIN TRANSLATION (chksum(pcal) = "fa314cbc" /\ chksum(tla) = "ea3b2288")
+VARIABLES people, acc, pc
 
 (* define statement *)
 NoOverdrafts == \A p \in people: acc[p] >= 0
 
+VARIABLES sender, receiver, amount
 
-vars == << people, acc, sender, receiver, amount, pc >>
+vars == << people, acc, pc, sender, receiver, amount >>
+
+ProcSet == (1..2)
 
 Init == (* Global variables *)
         /\ people = {"alice", "bob"}
         /\ acc = [p \in people |-> 5]
-        /\ sender = "alice"
-        /\ receiver = "bob"
-        /\ amount \in 1..acc[sender]
-        /\ pc = "Withdraw"
+        (* Process Wire *)
+        /\ sender = [self \in 1..2 |-> "alice"]
+        /\ receiver = [self \in 1..2 |-> "bob"]
+        /\ amount \in [1..2 -> 1..acc[sender[CHOOSE self \in  1..2 : TRUE]]]
+        /\ pc = [self \in ProcSet |-> "CheckAndWithdraw"]
 
-Withdraw == /\ pc = "Withdraw"
-            /\ acc' = [acc EXCEPT ![sender] = acc[sender] - amount]
-            /\ pc' = "Deposite"
-            /\ UNCHANGED << people, sender, receiver, amount >>
+CheckAndWithdraw(self) == /\ pc[self] = "CheckAndWithdraw"
+                          /\ IF amount[self] <= acc[sender[self]]
+                                THEN /\ acc' = [acc EXCEPT ![sender[self]] = acc[sender[self]] - amount[self]]
+                                     /\ pc' = [pc EXCEPT ![self] = "Deposite"]
+                                ELSE /\ pc' = [pc EXCEPT ![self] = "Done"]
+                                     /\ acc' = acc
+                          /\ UNCHANGED << people, sender, receiver, amount >>
 
-Deposite == /\ pc = "Deposite"
-            /\ acc' = [acc EXCEPT ![receiver] = acc[receiver] + amount]
-            /\ pc' = "Done"
-            /\ UNCHANGED << people, sender, receiver, amount >>
+Deposite(self) == /\ pc[self] = "Deposite"
+                  /\ acc' = [acc EXCEPT ![receiver[self]] = acc[receiver[self]] + amount[self]]
+                  /\ pc' = [pc EXCEPT ![self] = "Done"]
+                  /\ UNCHANGED << people, sender, receiver, amount >>
+
+Wire(self) == CheckAndWithdraw(self) \/ Deposite(self)
 
 (* Allow infinite stuttering to prevent deadlock on termination. *)
-Terminating == pc = "Done" /\ UNCHANGED vars
+Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
+               /\ UNCHANGED vars
 
-Next == Withdraw \/ Deposite
+Next == (\E self \in 1..2: Wire(self))
            \/ Terminating
 
 Spec == Init /\ [][Next]_vars
 
-Termination == <>(pc = "Done")
+Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
 \* END TRANSLATION 
 
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Oct 18 22:41:29 JST 2021 by ryo
+\* Last modified Mon Oct 18 22:48:33 JST 2021 by ryo
 \* Created Mon Oct 18 22:20:17 JST 2021 by ryo
