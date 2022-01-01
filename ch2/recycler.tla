@@ -5,15 +5,11 @@ EXTENDS Sequences, Integers, TLC, FiniteSets
 --algorithm recycler {
 
 variables
-    capacity = [trash |-> 10, recycle |-> 10],
+    capacity \in [trash: 1..10, recycle: 1..10],
     bins = [trash |-> {}, recycle |-> {}],
     count = [trash |-> 0, recycle |-> 0],
-    items = <<
-        [type |-> "recycle", size |-> 5],
-        [type |-> "trash", size |-> 5],
-        [type |-> "recycle", size |-> 4],
-        [type |-> "recycle", size |-> 3]
-    >>,
+    item = [type: {"trash", "recycle"}, size: 1..6],
+    items \in item \X item \X item \X item,
     curr = "";
 
 macro add_item(type) {
@@ -40,21 +36,17 @@ macro add_item(type) {
 }
 
 }*)
-\* BEGIN TRANSLATION (chksum(pcal) = "8f98d9a4" /\ chksum(tla) = "411f77dd")
-VARIABLES capacity, bins, count, items, curr, pc
+\* BEGIN TRANSLATION (chksum(pcal) = "dd133a46" /\ chksum(tla) = "cba53cb1")
+VARIABLES capacity, bins, count, item, items, curr, pc
 
-vars == << capacity, bins, count, items, curr, pc >>
+vars == << capacity, bins, count, item, items, curr, pc >>
 
 Init == (* Global variables *)
-        /\ capacity = [trash |-> 10, recycle |-> 10]
+        /\ capacity \in [trash: 1..10, recycle: 1..10]
         /\ bins = [trash |-> {}, recycle |-> {}]
         /\ count = [trash |-> 0, recycle |-> 0]
-        /\ items =         <<
-                       [type |-> "recycle", size |-> 5],
-                       [type |-> "trash", size |-> 5],
-                       [type |-> "recycle", size |-> 4],
-                       [type |-> "recycle", size |-> 3]
-                   >>
+        /\ item = [type: {"trash", "recycle"}, size: 1..6]
+        /\ items \in item \X item \X item \X item
         /\ curr = ""
         /\ pc = "Lbl_1"
 
@@ -75,13 +67,14 @@ Lbl_1 == /\ pc = "Lbl_1"
                                                           count >>
                     /\ pc' = "Lbl_1"
                ELSE /\ Assert(capacity.trash >= 0 /\ capacity.recycle >= 0, 
-                              "Failure of assertion at line 37, column 5.")
+                              "Failure of assertion at line 33, column 5.")
                     /\ Assert(Cardinality(bins.trash) = count.trash, 
-                              "Failure of assertion at line 38, column 5.")
+                              "Failure of assertion at line 34, column 5.")
                     /\ Assert(Cardinality(bins.recycle) = count.recycle, 
-                              "Failure of assertion at line 39, column 5.")
+                              "Failure of assertion at line 35, column 5.")
                     /\ pc' = "Done"
                     /\ UNCHANGED << capacity, bins, count, items, curr >>
+         /\ item' = item
 
 (* Allow infinite stuttering to prevent deadlock on termination. *)
 Terminating == pc = "Done" /\ UNCHANGED vars
@@ -97,5 +90,5 @@ Termination == <>(pc = "Done")
 
 =============================================================================
 \* Modification History
-\* Last modified Sun Oct 24 22:58:24 JST 2021 by ryo
+\* Last modified Sat Jan 01 22:14:08 JST 2022 by ryo
 \* Created Sun Oct 24 22:18:07 JST 2021 by ryo
