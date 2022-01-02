@@ -1,0 +1,37 @@
+*_SnapShot_*
+# Model_1
+
+# Reference: https://github.com/jameshfisher/tlaplus/blob/master/.gitignore
+
+# TLA+ Toolbox
+# Exclude all files related to TLA+ Toolbox
+# *.toolbox/**
+
+# */*.toolbox/*.launch
+*/*.toolbox/*.pmap
+
+# TLA+ Toolbox models
+*/*.toolbox/**/*.tla
+*/*.toolbox/**/*.out
+*/*.toolbox/**/*.cfg
+
+*/*.toolbox/**/*.fp
+*/*.toolbox/**/*.st
+*/*.toolbox/**/nodes_*
+*/*.toolbox/**/ptrs_*
+
+# PlusCal
+*/*.old
+
+# LaTex output
+*/*.toolbox/*aux
+*/*.toolbox/*.log
+*/*.toolbox/*.pdf
+*/*.toolbox/*.tex
+*aux
+*.log
+*.pdf
+*.tex
+
+# Vim backup file
+*~
